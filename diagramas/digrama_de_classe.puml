@@ -1,0 +1,58 @@
+@startuml
+
+interface IWebScapingBase<T> {
+  + abrir_conexao(): T
+  + obter_dados(dados: T): Generator<Noticia>
+}
+
+abstract class WebScrapingBs4base {
+  - _url: Optional[str]
+  - _parse: str
+  - _tratamento: Tratamento
+  + abrir_conexao(): BeautifulSoup
+  + obter_dados(dados: BeautifulSoup): Generator<Noticia> {abstract}
+}
+
+class WebScrapingBs4G1Rss {
+  + obter_dados(dados: BeautifulSoup): Generator<Noticia>
+}
+
+class WebScrapingG1 {
+  + obter_dados(dados: BeautifulSoup): Generator<Noticia>
+}
+
+class WebScrapingPipeline<T> {
+  - servico_web_scraping_rss: IWebScapingBase<T>
+  - servico_web_scraping_g1: IWebScapingBase<T>
+  + rodar_web_scraping()
+}
+
+class Noticia {
+  - titulo_noticia: str
+  - descricao_noticia: str
+  - url: str
+  - url_imagem: str
+  - data_publicacao: datetime
+  - subtitulo: str
+  - texto_noticia: str
+  - autor: str
+}
+
+class Tratamento {
+  + limpar_descricao(descricao_html: str, parser_html: str): str
+}
+
+' Heranças
+WebScrapingBs4base ..|> IWebScapingBase
+WebScrapingBs4G1Rss --|> WebScrapingBs4base
+WebScrapingG1 --|> WebScrapingBs4base
+
+' Uso e composição
+WebScrapingPipeline "1" --> "1" IWebScapingBase : usa (RSS)
+WebScrapingPipeline "1" --> "1" IWebScapingBase : usa (G1)
+WebScrapingBs4base "1" --> "1" Tratamento : composição
+
+' Geração de notícias
+IWebScapingBase "1" --> "0..*" Noticia : gera
+
+@enduml

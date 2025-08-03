@@ -1,0 +1,12 @@
+/docs/.~lock.requisitos.odt#
+__pycache__
+noticia
+.env
+.vpp.
+/docs/diagrama_de_classe.vpp.bak_023d
+*.vpp*
+*.log
+*.db
+*.docx
+*.plantuml
+*.env

@@ -1,0 +1,28 @@
+
+
+networks:
+  rabbitmq_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.0.0/16
+
+services:
+  rabbitmq:
+    image: rabbitmq:4-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"     
+      - "15672:15672"
+    volumes:
+      - ./rabbitmq_data:/var/lib/rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=rodrigo
+      - RABBITMQ_DEFAULT_PASS=123456
+    networks:
+      rabbitmq_net:
+        ipv4_address: 172.30.0.10
+    restart: unless-stopped
+
+volumes:
+  rabbitmq_data:
