@@ -10,6 +10,8 @@ noticia
 *.docx
 *.plantuml
 *.env
+redis_data
+redis_commander_data
 rabbitmq_data
 /rabbitmq_data/mnesia/rabbit@6edbce417255/coordination/rabbit@6edbce417255/RABBIT88V3ADVVT4K2/config
 /rabbitmq_data/mnesia/rabbit@6edbce417255/coordination/rabbit@6edbce417255/0000000000000001.wal
