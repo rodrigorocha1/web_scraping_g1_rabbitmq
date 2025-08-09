@@ -8,14 +8,7 @@ from src.tratamento.tratamento import Tratamento
 from requests.exceptions import HTTPError, ConnectionError, ConnectTimeout, ReadTimeout, TooManyRedirects, \
     RequestException
 
-from src.utils.db_handler import DBHandler
-
 U = TypeVar('U')
-
-FORMATO = '%(asctime)s %(filename)s %(funcName)s'
-db_handler = DBHandler(nome_pacote='WebScrapingBs4base', formato_log=FORMATO, debug=logging.DEBUG)
-
-logger = db_handler.loger
 
 
 class WebScrapingBs4base(IWebScapingBase[BeautifulSoup, U], ABC):
@@ -64,101 +57,38 @@ class WebScrapingBs4base(IWebScapingBase[BeautifulSoup, U], ABC):
         try:
             if self._url is None:
                 raise ValueError("URL não pode ser None")
-            logger.info(
-                f'Conectando na URL ',
-                extra={'url': self._url}
-            )
+
             response = requests.get(url=self._url)
             response.raise_for_status()
             conteudo_response = response.content
-            logger.info(
-                f'Sucesso ao conectar ',
-                extra={
-                    'url': self._url,
-                    'status_code': response.status_code,
-                    'requisicao' : response.text
-                }
-            )
+
             try:
                 soup = BeautifulSoup(conteudo_response, self._parse)
                 return soup
 
             except Exception as e:
-                logger.error(
-                    msg=f'Erro inesperado {e}',
-                    extra={
-                        'url': self._url,
-                        'status_code': response.status_code
-                    }
-                )
+
                 return None
 
         except HTTPError as http_err:
-            logger.error(
-                msg=f"Erro HTTP  - Pipeline fechado",
-                extra={
-                    'url': self._url,
-                    'status_code': response.status_code,
-                    'mensagem_de_execao_tecnica': http_err
-
-                }
-            )
             return None
         except ConnectionError:
-            logger.error(
-                msg=f'Erro de conexão - Pipeline fechado',
-                extra={
-                    'url': self._url,
-                    'status_code': response.status_code
-                }
-            )
+
             return None
         except ConnectTimeout:
-            logger.error(
-                msg=f'Tempo de conexão excedido url - Pipeline fechado ',
-                extra={
-                    'url': self._url,
-                    'status_code': response.status_code
-                }
-            )
+
             return None
         except ReadTimeout:
-            logging.error(
-                msg=f"Tempo de leitura excedido url - Pipeline fechado",
-                extra={
-                    'status_code': response.status_code,
-                    'url': self._url
-                }
-            )
+
             return None
         except TooManyRedirects:
-            logging.error(
-                msg="Redirecionamentos em excesso detectados. url {self._url} - Pipeline fechado",
-                extra={
-                    'url': self._url,
-                    'status_code': response.status_code
-                }
-            )
+
             return None
         except RequestException as req_err:
-            logging.error(
-                msg=f"Erro de requisição: url - Pipeline fechado",
-                extra={
-                    'url': self._url,
-                    'status_code': response.status_code,
-                    'mensagem_de_execao_tecnica': req_err
-                }
-            )
+
             return None
         except Exception as e:
-            logging.error(
-                msg=f"Erro inesperado: url  - Pipeline fechado",
-                extra={
-                    'url': self._url,
-                    'status_code': response.status_code,
-                    'mensagem_de_execao_tecnica': e
-                }
-            )
+
             return None
 
     @abstractmethod

@@ -45,7 +45,6 @@ class WebScrapingBs4G1Rss(WebScrapingBs4base[Generator[Dict[str, Any], None, Non
 
             yield {
                 'titulo_rss': titulo_noticia,
-
                 'url_imagem_rss': url_imagem,
                 'url_rss': url,
                 'data_publicacao_rss': data_publicacao
