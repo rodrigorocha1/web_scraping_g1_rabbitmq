@@ -1,3 +1,5 @@
+import os
+
 from src.servicos.manipulador.arquivo import Arquivo
 from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
@@ -81,6 +83,7 @@ class ArquivoDOCX(Arquivo):
         self._formatar_subtitulo()
         self._formatar_autor_data()
         self._formatar_texto()
+        os.makedirs(self.caminho_completo, exist_ok=True)
         self.__documento.save(self.caminho_completo)
 
     def __call__(self):
