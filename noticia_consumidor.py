@@ -48,6 +48,7 @@ class NoticiaTrabalhador:
                 self.__arquivo.nome_arquivo = nome_arquivo
                 self.__arquivo.diretorio = method.routing_key
                 self.__arquivo.gerar_documento()
+                self.__arquivo()
 
 
             ch.basic_ack(delivery_tag=method.delivery_tag)
