@@ -10,6 +10,15 @@ class Arquivo(ABC):
         self._caminho_raiz: str = os.getcwd()
         self._nome_arquivo: Optional[str] = None
         self._noticia: Optional[Noticia] = None
+        self._diretorio: Optional[str] = None
+
+    @property
+    def diretorio(self) -> Optional[str]:
+        return self._diretorio
+
+    @diretorio.setter
+    def diretorio(self, diretorio: str):
+        self._diretorio = diretorio
 
     @property
     def nome_arquivo(self) -> Optional[str]:
@@ -55,8 +64,6 @@ class Arquivo(ABC):
         if not isinstance(nova_noticia, Noticia) and nova_noticia is not None:
             raise TypeError("O atributo noticia deve ser uma instância de Noticia ou None")
         self.__noticia = nova_noticia
-
-
 
     @abstractmethod
     def _formatar_titulo(self):
