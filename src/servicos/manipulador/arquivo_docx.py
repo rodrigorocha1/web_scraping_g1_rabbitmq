@@ -83,7 +83,7 @@ class ArquivoDOCX(Arquivo):
         self._formatar_subtitulo()
         self._formatar_autor_data()
         self._formatar_texto()
-        os.makedirs(self.caminho_completo, exist_ok=True)
+        os.makedirs(os.path.join(self._caminho_raiz, self.diretorio), exist_ok=True)
         self.__documento.save(self.caminho_completo)
 
     def __call__(self):
