@@ -12,6 +12,17 @@ class Arquivo(ABC):
         self._noticia: Optional[Noticia] = None
         self._diretorio: Optional[str] = None
 
+
+    @property
+    def caminho_completo(self) -> Optional[str]:
+        """
+        Retorna o caminho completo juntando raiz, diretório e nome do arquivo.
+        Retorna None se algum dos componentes não estiver definido.
+        """
+        if self._diretorio and self._nome_arquivo:
+            return os.path.join(self._caminho_raiz, self._diretorio, self._nome_arquivo)
+        return None
+
     @property
     def diretorio(self) -> Optional[str]:
         return self._diretorio
@@ -116,5 +127,6 @@ class Arquivo(ABC):
         :rtype: None
         """
         self._caminho_raiz = os.getcwd()
+        self._diretorio = None
         self._nome_arquivo = None
         self._noticia = None

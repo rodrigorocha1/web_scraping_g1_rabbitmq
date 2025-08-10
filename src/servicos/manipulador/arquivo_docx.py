@@ -81,7 +81,7 @@ class ArquivoDOCX(Arquivo):
         self._formatar_subtitulo()
         self._formatar_autor_data()
         self._formatar_texto()
-        self.__documento.save(self.nome_arquivo)
+        self.__documento.save(self.caminho_completo)
 
     def __call__(self):
         """Permite resetar o objeto chamando-o como função."""
