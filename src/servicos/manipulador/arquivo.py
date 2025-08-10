@@ -61,7 +61,7 @@ class Arquivo(ABC):
         :return: noticia
         :rtype: Noticia
         """
-        return self.__noticia
+        return self._noticia
 
     @noticia.setter
     def noticia(self, nova_noticia: Noticia) -> None:
@@ -74,7 +74,7 @@ class Arquivo(ABC):
         """
         if not isinstance(nova_noticia, Noticia) and nova_noticia is not None:
             raise TypeError("O atributo noticia deve ser uma instância de Noticia ou None")
-        self.__noticia = nova_noticia
+        self._noticia = nova_noticia
 
     @abstractmethod
     def _formatar_titulo(self):

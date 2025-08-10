@@ -59,6 +59,6 @@ if __name__ == '__main__':
     produtor = Produtor(
         servico_web_scraping=rss_servico
     )
-    while True:
-        produtor.rodar(urls_rss=urls_rss)
-        time.sleep(1)
+
+    produtor.rodar(urls_rss=urls_rss)
+

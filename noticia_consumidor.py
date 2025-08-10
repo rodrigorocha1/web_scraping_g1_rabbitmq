@@ -38,10 +38,19 @@ class NoticiaTrabalhador:
         print('=' * 100)
         self.__servico_web_scraping.url = url
         dados = self.__servico_web_scraping.abrir_conexao()
-        noticia = self.__servico_web_scraping.obter_dados(dados=dados)
-        if noticia.texto:
-            print(noticia.texto)
-        ch.basic_ack(delivery_tag=method.delivery_tag)
+        if dados:
+            noticia = self.__servico_web_scraping.obter_dados(dados=dados)
+            if noticia.texto is not None:
+                self.__arquivo.noticia = noticia
+                nome_arquivo = ''.join(
+                    url.split('.')[-2].split('/')[-1].replace('-', '_') + '.docx'
+                )
+                self.__arquivo.nome_arquivo = nome_arquivo
+                self.__arquivo.diretorio = method.routing_key
+                self.__arquivo.gerar_documento()
+
+
+            ch.basic_ack(delivery_tag=method.delivery_tag)
 
     def rodar(self):
         canal = self.__conexao.channel()
