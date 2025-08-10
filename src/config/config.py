@@ -5,7 +5,7 @@ load_dotenv()
 
 
 class Config:
-    URL_API = os.environ['URL_API']
-    USER_API = os.environ['USER_API']
-    SENHA_API = os.environ['SENHA_API']
-    CONTENT_TYPE = 'application/json'
+    URL_FILA = os.environ['URL_FILA']
+    USR_FILA = os.environ['USR_FILA']
+    PORTA_FILA = os.environ['PORTA_FILA']
+    PASSWD_FILA = os.environ['PASSWD_FILA']

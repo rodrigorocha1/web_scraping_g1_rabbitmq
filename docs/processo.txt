@@ -1,0 +1,8 @@
+1 - Produtor
+ - Acessar url rss
+ - obter a url da noticia
+ - criar fila (fila_noticia_ribeirao_preto)
+2-Workers 
+ - Acessar site do g1 
+ - extrair da noticia
+ - guardar texto da noticia no docx
