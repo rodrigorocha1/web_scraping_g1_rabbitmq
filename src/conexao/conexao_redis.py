@@ -1,6 +1,7 @@
-from typing import Optional
+from typing import Optional, Dict
 from src.config.config import Config
 import redis
+import hashlib
 
 
 class ConexaoRedis:
@@ -16,14 +17,45 @@ class ConexaoRedis:
             decode_responses=True
         )
 
-    def is_member(self, set_name: str, value: str) -> bool:
+
+    def e_membro(self, set_name: str, value: str) -> bool:
         return bool(self.__cliente_redis.sismember(set_name, value))
 
-    def add_member(self, set_name: str, value: str, ttl_seconds: Optional[int] = None):
+    def acionar_membro(self, set_name: str, value: str, ttl_seconds: Optional[int] = None):
         self.__cliente_redis.sadd(set_name, value)
         if ttl_seconds:
-            aux_key = f'ttl:{set_name}:{value}'
+            aux_key = f"ttl:{set_name}:{value}"
             self.__cliente_redis.setex(aux_key, ttl_seconds, "1")
+
+
+    @staticmethod
+    def gerar_hash_id(url: str) -> str:
+        return hashlib.md5(url.encode("utf-8")).hexdigest()
+
+    def enviar_noticia(self, url: str, data: Dict):
+        hash_id = self.gerar_hash_id(url)
+        self.__cliente_redis.hset(f"noticia:{hash_id}", mapping=data)
+        return hash_id
+
+    def obter_noticia(self, url: str) -> Dict:
+        hash_id = self.gerar_hash_id(url)
+        return self.__cliente_redis.hgetall(f"noticia:{hash_id}")
+
+
+    def incrementar_contador(self, nome_contador: str, valor: int = 1):
+        self.__cliente_redis.incrby(nome_contador, valor)
+
+    def obter_contador(self, nome_contador: str) -> int:
+        value = self.__cliente_redis.get(nome_contador)
+        return int(value) if value else 0
+
+
+    def push_reprocessar(self, url: str):
+        self.__cliente_redis.lpush("fila:reprocessar", url)
+
+    def pop_reprocessar(self) -> Optional[str]:
+        return self.__cliente_redis.rpop("fila:reprocessar")
+
 
     def close(self):
         try:
