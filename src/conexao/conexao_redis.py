@@ -18,13 +18,13 @@ class ConexaoRedis:
         )
 
 
-    def e_membro(self, set_name: str, value: str) -> bool:
-        return bool(self.__cliente_redis.sismember(set_name, value))
+    def e_membro(self, set_name: str, valor: str) -> bool:
+        return bool(self.__cliente_redis.sismember(set_name, valor))
 
-    def acionar_membro(self, set_name: str, value: str, ttl_seconds: Optional[int] = None):
-        self.__cliente_redis.sadd(set_name, value)
+    def acionar_membro(self, set_name: str, valor: str, ttl_seconds: Optional[int] = None):
+        self.__cliente_redis.sadd(set_name, valor)
         if ttl_seconds:
-            aux_key = f"ttl:{set_name}:{value}"
+            aux_key = f"ttl:{set_name}:{valor}"
             self.__cliente_redis.setex(aux_key, ttl_seconds, "1")
 
 
@@ -32,9 +32,9 @@ class ConexaoRedis:
     def gerar_hash_id(url: str) -> str:
         return hashlib.md5(url.encode("utf-8")).hexdigest()
 
-    def enviar_noticia(self, url: str, data: Dict):
+    def enviar_noticia(self, url: str, dados: Dict):
         hash_id = self.gerar_hash_id(url)
-        self.__cliente_redis.hset(f"noticia:{hash_id}", mapping=data)
+        self.__cliente_redis.hset(f"noticia:{hash_id}", mapping=dados)
         return hash_id
 
     def obter_noticia(self, url: str) -> Dict:

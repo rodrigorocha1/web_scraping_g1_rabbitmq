@@ -52,7 +52,7 @@ class Produtor:
 if __name__ == '__main__':
     urls_rss = {
         'fila_g1_ribeirao_preto': 'https://g1.globo.com/rss/g1/sp/ribeirao-preto-franca',
-        'fila_tecnologia_games': 'https://g1.globo.com/rss/g1/tecnologia/',
+        'fila_g1_tecnologia': 'https://g1.globo.com/rss/g1/tecnologia/',
         'fila_g1_para': 'https://g1.globo.com/rss/g1/pa/para/',
     }
     rss_servico = WebScrapingBs4G1Rss(url=None)

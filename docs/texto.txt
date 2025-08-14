@@ -5,3 +5,8 @@ https://chatgpt.com/c/687f79b3-259c-800e-81ee-a9c97b725edf
 https://gemini.google.com/app/b3ce3880121a2691
 
 https://chatgpt.com/c/6880458b-33d4-800e-93e4-9ab94a1dcf1e
+
+
+g1:ribeirao_preto:urls  -> Set { "url1", "url2", ... }
+g1:tecnologia:urls    -> Set { "url3", "url4", ... }
+g1:para:urls             -> Set { "url5", "url6", ... }

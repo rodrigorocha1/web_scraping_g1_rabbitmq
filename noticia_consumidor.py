@@ -7,6 +7,8 @@ from bs4 import BeautifulSoup
 from pika.spec import BasicProperties
 from pika.spec import Basic
 from pika.adapters.blocking_connection import BlockingChannel
+
+from src.conexao.conexao_redis import ConexaoRedis
 from src.models.noticia import Noticia
 from src.servicos.extracao.iwebscrapingbase import IWebScapingBase
 from src.servicos.extracao.webscrapingsiteg1 import WebScrapingG1
@@ -32,25 +34,29 @@ class NoticiaTrabalhador:
         self.__servico_web_scraping = servico_web_scraping
         self.__arquivo = arquivo
         self.__nome_fila = nome_fila
+        self.__conexao_redis = ConexaoRedis()
+
+
 
     def callback(self, ch: BlockingChannel, method: Basic.Deliver, properties: BasicProperties, body: bytes):
         url = body.decode()
-        print('=' * 100)
-        self.__servico_web_scraping.url = url
-        dados = self.__servico_web_scraping.abrir_conexao()
-        if dados:
-            noticia = self.__servico_web_scraping.obter_dados(dados=dados)
-            if noticia.texto is not None:
-                self.__arquivo.noticia = noticia
-                nome_arquivo = ''.join(
-                    url.split('.')[-2].split('/')[-1].replace('-', '_') + '.docx'
-                )
-                self.__arquivo.nome_arquivo = nome_arquivo
-                self.__arquivo.diretorio = method.routing_key
-                self.__arquivo.gerar_documento()
-                self.__arquivo()
+        set_name = f'g1:{method.routing_key.split("_")[2:]}:urls'
 
-
+        if not self.__conexao_redis.e_membro(set_name=set_name, valor=url):
+            self.__servico_web_scraping.url = url
+            dados = self.__servico_web_scraping.abrir_conexao()
+            if dados:
+                noticia = self.__servico_web_scraping.obter_dados(dados=dados)
+                if noticia.texto is not None:
+                    self.__arquivo.noticia = noticia
+                    nome_arquivo = ''.join(
+                        url.split('.')[-2].split('/')[-1].replace('-', '_') + '.docx'
+                    )
+                    self.__arquivo.nome_arquivo = nome_arquivo
+                    self.__arquivo.diretorio = method.routing_key
+                    self.__arquivo.gerar_documento()
+                    self.__arquivo()
+                    self.__conexao_redis.acionar_membro(set_name=set_name, valor=url, ttl_seconds=7 * 24 * 3600)
             ch.basic_ack(delivery_tag=method.delivery_tag)
 
     def rodar(self):
@@ -71,7 +77,6 @@ class NoticiaTrabalhador:
 
 if __name__ == '__main__':
     nome_fila = sys.argv[1]
-    print(nome_fila)
     servico_web_scraping = WebScrapingG1(url=None, parse="html.parser")
     arquivo = ArquivoDOCX()
     notica_worker = NoticiaTrabalhador(
