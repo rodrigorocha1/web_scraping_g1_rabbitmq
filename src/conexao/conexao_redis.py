@@ -21,8 +21,9 @@ class ConexaoRedis:
     def e_membro(self, set_name: str, valor: str) -> bool:
         return bool(self.__cliente_redis.sismember(set_name, valor))
 
-    def acionar_membro(self, set_name: str, valor: str, ttl_seconds: Optional[int] = None):
+    def adicionar_set(self, set_name: str, valor: str, ttl_seconds: Optional[int] = None):
         self.__cliente_redis.sadd(set_name, valor)
+        print('Set adicionado')
         if ttl_seconds:
             aux_key = f"ttl:{set_name}:{valor}"
             self.__cliente_redis.setex(aux_key, ttl_seconds, "1")

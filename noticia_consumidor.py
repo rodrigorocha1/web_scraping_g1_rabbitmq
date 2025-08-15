@@ -35,41 +35,75 @@ class NoticiaTrabalhador:
         self.__arquivo = arquivo
         self.__nome_fila = nome_fila
         self.__conexao_redis = ConexaoRedis()
+        self.__exchange_dlx = 'dead_letter_exchange'
+        self.__dlq_queue = f'{nome_fila}_dead_letter'
 
+    def configurar_fila(self):
+        canal = self.__conexao.channel()
+        canal.exchange_declare(exchange=self.__exchange_dlx, exchange_type='direct', durable=True)
 
+        canal.queue_declare(queue=self.__exchange_dlx, durable=True)
+        canal.queue_bind(exchange=self.__exchange_dlx, queue=self.__dlq_queue, routing_key=self.__dlq_queue)
+        args = {
+            "x-dead-letter-exchange": self.__exchange_dlx,
+            "x-dead-letter-routing-key": self.__dlq_queue
+        }
+
+        canal.queue_declare(queue=self.__nome_fila, durable=True, arguments=args)
+        return canal
+
+    def processar_noticia(self, url: str, set_name: str, method: Basic.Deliver):
+        try:
+            if not self.__conexao_redis.e_membro(set_name=set_name, valor=url):
+                self.__servico_web_scraping.url = url
+                dados = self.__servico_web_scraping.abrir_conexao()
+                if dados:
+                    noticia = self.__servico_web_scraping.obter_dados(dados=dados)
+                    if len(noticia.texto) > 0 or noticia.texto is not None:
+                        self.__arquivo.noticia = noticia
+                        nome_arquivo = ''.join(
+                            url.split('.')[-2].split('/')[-1].replace('-', '_') + '.docx'
+                        )
+                        self.__arquivo.nome_arquivo = nome_arquivo
+                        self.__arquivo.diretorio = method.routing_key
+                        self.__arquivo.gerar_documento()
+                        self.__arquivo()
+                        self.__conexao_redis.adicionar_set(set_name=set_name, valor=url)
+
+                return True
+
+            return False
+        except:
+            return False
 
     def callback(self, ch: BlockingChannel, method: Basic.Deliver, properties: BasicProperties, body: bytes):
         url = body.decode()
-        set_name = f'g1:{method.routing_key.split("_")[2:]}:urls'
-
+        set_name = f'g1:{"_".join(method.routing_key.split("_")[2:])}:urls'
         if not self.__conexao_redis.e_membro(set_name=set_name, valor=url):
             self.__servico_web_scraping.url = url
-            dados = self.__servico_web_scraping.abrir_conexao()
-            if dados:
-                noticia = self.__servico_web_scraping.obter_dados(dados=dados)
-                if noticia.texto is not None:
-                    self.__arquivo.noticia = noticia
-                    nome_arquivo = ''.join(
-                        url.split('.')[-2].split('/')[-1].replace('-', '_') + '.docx'
-                    )
-                    self.__arquivo.nome_arquivo = nome_arquivo
-                    self.__arquivo.diretorio = method.routing_key
-                    self.__arquivo.gerar_documento()
-                    self.__arquivo()
-                    self.__conexao_redis.acionar_membro(set_name=set_name, valor=url, ttl_seconds=7 * 24 * 3600)
+
+            if self.processar_noticia(url=url, set_name=set_name, method=method):
+                print(f'Url inserida no Redis {url}')
+            else:
+                ch.basic_publish(
+                    exchange=self.__exchange_dlx,
+                    routing_key=self.__dlq_queue,
+                    body=url,
+                    properties=pika.BasicProperties(delivery_mode=2)
+                )
+
             ch.basic_ack(delivery_tag=method.delivery_tag)
+        else:
+            print(f'url já foi adicionada {url}')
+
 
     def rodar(self):
-        canal = self.__conexao.channel()
-        try:
+        canal = self.configurar_fila()
 
-            canal.queue_declare(queue=self.__nome_fila, durable=True)
-            canal.basic_qos(prefetch_count=1)
-            print('consume')
-            canal.basic_consume(
-                queue=self.__nome_fila,
-                on_message_callback=self.callback
-            )
+        try:
+            print('Dentro de rodar noticia')
+
+            canal.basic_consume(queue=self.__nome_fila, on_message_callback=self.callback)
             canal.start_consuming()
         except KeyboardInterrupt:
             canal.stop_consuming()
