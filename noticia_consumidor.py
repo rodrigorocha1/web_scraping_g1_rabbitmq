@@ -99,10 +99,7 @@ class NoticiaTrabalhador:
 
     def rodar(self):
         canal = self.configurar_fila()
-
         try:
-            print('Dentro de rodar noticia')
-
             canal.basic_consume(queue=self.__nome_fila, on_message_callback=self.callback)
             canal.start_consuming()
         except KeyboardInterrupt:
